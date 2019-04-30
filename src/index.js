@@ -2,47 +2,53 @@ import React from "react";
 import ReactDOM from "react-dom";
 import SeasonDisplay from "./SeasonDisplay";
 import Loader from "./Loader";
+import useLocation from "./useLocation";
 
-// Class-based component
-class App extends React.Component {
-  // React uses Babel to translate to constuctor, super and initializes this.state
-  // Initialize state as an instance property
-  state = { lat: null, errorMessage: "" };
+// BELOW: Functional-based component using HOOKS to access lifecycle methods and state.
 
-  componentDidMount() {
-    window.navigator.geolocation.getCurrentPosition(
-      // 1st argument = position
-      // Must call setState() to update the state of the component
-      // This callback will run in the future AFTER we've successfully located the position
-      position => this.setState({ lat: position.coords.latitude }),
-      // 2nd argument = err (if user declines location request)
-      err => this.setState({ errorMessage: err.message })
-    );
+const App = () => {
+  // Connect hooks
+  const [lat, errorMessage] = useLocation();
+
+  let content;
+  if (errorMessage) {
+    content = <div>Error: {errorMessage}</div>;
+  } else if (lat) {
+    content = <SeasonDisplay lat={lat} />;
+  } else {
+    content = <Loader message="Please accept location request" />;
   }
 
-  // Helper function for conditional logic
-  renderContent() {
-    if (this.state.errorMessage && !this.state.lat) {
-      return <div>Error: {this.state.errorMessage}</div>;
-    }
+  return <div className="border red">{content}</div>;
+};
 
-    if (!this.state.errorMessage && this.state.lat) {
-      // Taking property from state on the App component and passing it down as a prop in SeasonDisplay (child component)
-      return <SeasonDisplay lat={this.state.lat} />;
-    }
+// BELOW: Class-based component to access lifecycle methods and component-level state.
 
-    return <Loader message="Please accept location request." />;
-  }
+// class App extends React.Component {
+//   state = { lat: null, errorMessage: '' };
 
-  // React requires this render() method, otherwise error.
-  // Avoid doing anything besides returning JSX.
-  render() {
-    return (
-      <div>
-        <div className="border-black">{this.renderContent()}</div>
-      </div>
-    );
-  }
-}
+//   componentDidMount() {
+//     window.navigator.geolocation.getCurrentPosition(
+//       position => this.setState({ lat: position.coords.latitude }),
+//       err => this.setState({ errorMessage: err.message })
+//     );
+//   }
+
+//   renderContent() {
+//     if (this.state.errorMessage && !this.state.lat) {
+//       return <div>Error: {this.state.errorMessage}</div>;
+//     }
+
+//     if (!this.state.errorMessage && this.state.lat) {
+//       return <SeasonDisplay lat={this.state.lat} />;
+//     }
+
+//     return <Loader message="Please accept location request" />;
+//   }
+
+//   render() {
+//     return <div className="border red">{this.renderContent()}</div>;
+//   }
+// }
 
 ReactDOM.render(<App />, document.querySelector("#root"));
